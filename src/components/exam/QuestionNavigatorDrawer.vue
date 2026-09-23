@@ -1,0 +1,120 @@
+<script setup>
+import { computed } from 'vue'
+import { useExamAttemptStore } from '@/stores/examAttempt'
+import { X } from 'lucide-vue-next'
+import ExamStatusLegend from './ExamStatusLegend.vue'
+
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['close', 'finish'])
+const examStore = useExamAttemptStore()
+
+const questions = computed(() => examStore.questions)
+const activeId = computed(() => examStore.currentQuestion?.id)
+const answers = computed(() => examStore.answers)
+
+const answeredCount = computed(() => examStore.answeredCount)
+const unansweredCount = computed(() => examStore.unansweredCount)
+const flaggedCount = computed(() => examStore.flaggedCount)
+const total = computed(() => examStore.totalQuestions)
+
+const goTo = (index) => {
+  examStore.goToQuestion(index)
+  emit('close')
+}
+
+const getStatusClass = (qId) => {
+  const isActive = qId === activeId.value
+  const ans = answers.value[qId]
+  const isFlagged = ans?.isFlagged
+  let isAnswered = false
+  
+  if (ans) {
+    if (ans.selectedOptionId) isAnswered = true
+    if (typeof ans.answerText === 'string' && ans.answerText.trim() !== '') isAnswered = true
+  }
+
+  if (isActive) {
+    return 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-600 ring-offset-2'
+  }
+  if (isFlagged) {
+    return 'bg-amber-400 text-amber-900 border-amber-500'
+  }
+  if (isAnswered) {
+    return 'bg-green-500 text-white border-green-600'
+  }
+  
+  return 'bg-white text-slate-700 border-slate-300'
+}
+</script>
+
+<template>
+  <div 
+    v-if="isOpen" 
+    class="fixed inset-0 z-50 flex flex-col justify-end bg-slate-900/60 backdrop-blur-sm md:hidden transition-opacity animate-in fade-in duration-200"
+    @click.self="emit('close')"
+  >
+    <div class="bg-white rounded-t-3xl w-full h-[85vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+      
+      <!-- Drawer Header -->
+      <div class="flex items-center justify-between p-5 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-lg">Daftar Soal</h3>
+        <button 
+          @click="emit('close')"
+          class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+        >
+          <X class="w-5 h-5" />
+        </button>
+      </div>
+
+      <!-- Summary -->
+      <div class="px-5 py-4 border-b border-slate-100 flex justify-between">
+        <div>
+          <div class="text-xl font-black text-slate-900">{{ answeredCount }}</div>
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dijawab</div>
+        </div>
+        <div>
+          <div class="text-xl font-black text-slate-900">{{ unansweredCount }}</div>
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Belum</div>
+        </div>
+        <div>
+          <div class="text-xl font-black text-amber-500">{{ flaggedCount }}</div>
+          <div class="text-[10px] font-bold text-amber-500/70 uppercase tracking-wider">Ditandai</div>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="p-5 overflow-y-auto flex-1">
+        <div class="grid grid-cols-5 gap-3">
+          <button 
+            v-for="(q, idx) in questions" 
+            :key="q.id"
+            @click="goTo(idx)"
+            class="w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold border"
+            :class="getStatusClass(q.id)"
+          >
+            {{ idx + 1 }}
+          </button>
+        </div>
+
+        <ExamStatusLegend class="mt-6" />
+      </div>
+
+      <!-- Footer Action -->
+      <div class="p-5 border-t border-slate-100 bg-slate-50">
+        <button 
+          @click="emit('finish')"
+          class="w-full py-3.5 bg-white border-2 border-red-500 text-red-600 rounded-xl text-base font-bold hover:bg-red-50"
+        >
+          Selesaikan Ujian
+        </button>
+      </div>
+
+    </div>
+  </div>
+</template>
