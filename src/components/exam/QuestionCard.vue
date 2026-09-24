@@ -66,8 +66,12 @@ onUnmounted(() => {
     <div class="p-5 sm:p-8">
       
       <!-- Text -->
-      <div class="text-[16px] sm:text-[18px] md:text-[20px] leading-relaxed text-slate-900 mb-8 whitespace-pre-line">
-        {{ question.questionText }}
+      <div class="text-[16px] sm:text-[18px] md:text-[20px] leading-relaxed text-slate-900 mb-8 prose prose-lg max-w-none" v-html="question.questionText">
+      </div>
+
+      <!-- Image -->
+      <div v-if="question.mediaUrl" class="mb-8">
+        <img :src="question.mediaUrl" alt="Gambar Soal" class="max-h-64 sm:max-h-96 rounded-lg border border-slate-200 shadow-sm object-contain" />
       </div>
 
       <!-- Options / Answer Area -->
