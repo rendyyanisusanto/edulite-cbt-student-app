@@ -43,12 +43,15 @@ const onSelect = () => {
 
     <!-- Text -->
     <div 
-      class="flex-1 text-[15px] sm:text-base leading-relaxed pt-1"
+      class="flex-1 text-[15px] sm:text-base leading-relaxed pt-1 min-w-0"
       :class="[
         isSelected ? 'text-slate-900 font-medium' : 'text-slate-700'
       ]"
     >
-      {{ option.text }}
+      <div class="prose prose-sm max-w-none text-left" v-html="option.text"></div>
+      <div v-if="option.mediaUrl" class="mt-3 text-left">
+        <img :src="option.mediaUrl" alt="Gambar Pilihan" class="max-h-32 rounded-lg border border-slate-200 shadow-sm object-contain" />
+      </div>
     </div>
   </button>
 </template>
