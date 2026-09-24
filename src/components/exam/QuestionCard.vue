@@ -8,12 +8,12 @@ const examStore = useExamAttemptStore()
 
 const question = computed(() => examStore.currentQuestion)
 const answer = computed(() => {
-  if (!question.value) return ''
+  if (!question.value) return { text: '', fileUrl: '' }
   const ans = examStore.answers[question.value.id]
-  if (!ans) return ''
+  if (!ans) return { text: '', fileUrl: '' }
   if (question.value.questionType === 'SINGLE_CHOICE') return ans.selectedOptionId
-  if (question.value.questionType === 'ESSAY') return ans.answerText || ''
-  return ''
+  if (question.value.questionType === 'ESSAY') return { text: ans.answerText || '', fileUrl: ans.answerFileUrl || '' }
+  return { text: '', fileUrl: '' }
 })
 
 const setAnswerChoice = (val) => {
@@ -22,6 +22,10 @@ const setAnswerChoice = (val) => {
 
 const setAnswerEssay = (val) => {
   examStore.setEssayAnswerLocal(question.value.id, val)
+}
+
+const setAnswerFile = (url) => {
+  examStore.setEssayFileLocal(question.value.id, url)
 }
 
 // Keyboard shortcuts for Single Choice
@@ -87,9 +91,11 @@ onUnmounted(() => {
 
       <div v-else-if="question.questionType === 'ESSAY'">
         <EssayAnswer 
-          :modelValue="answer"
+          :modelValue="answer.text"
+          :fileUrl="answer.fileUrl"
           :questionId="question.id"
           @update:modelValue="setAnswerEssay"
+          @update:fileUrl="setAnswerFile"
         />
       </div>
 

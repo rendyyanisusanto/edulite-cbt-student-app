@@ -189,6 +189,7 @@ export const useExamAttemptStore = defineStore('examAttempt', {
         const payload = {
           selectedOptionId: ans.selectedOptionId,
           answerText: ans.answerText,
+          answerFileUrl: ans.answerFileUrl,
           isFlagged: ans.isFlagged,
           version: ans.version
         };
@@ -263,6 +264,20 @@ export const useExamAttemptStore = defineStore('examAttempt', {
         this.saveAnswer(questionId);
         delete this._essayTimeouts[questionId];
       }, 1000);
+    },
+    
+    async setEssayFileLocal(questionId, fileUrl) {
+      if (!this.answers[questionId]) {
+        this.answers[questionId] = { answerFileUrl: fileUrl };
+      } else {
+        this.answers[questionId].answerFileUrl = fileUrl;
+      }
+      
+      this.localDrafts[questionId] = { ...this.answers[questionId] };
+      if (this.attempt) this._persistLocalDraft(this.attempt.id);
+      
+      // Save immediately for file uploads
+      await this.saveAnswer(questionId);
     },
     
     async retrySync() {
