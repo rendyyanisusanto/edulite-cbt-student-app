@@ -1,15 +1,18 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useExamAttemptStore } from '@/stores/examAttempt'
 import { Clock } from 'lucide-vue-next'
 
 const examStore = useExamAttemptStore()
+const router = useRouter()
 
 const activeNumber = computed(() => examStore.currentQuestionIndex + 1)
 const totalQuestions = computed(() => examStore.totalQuestions)
 const title = computed(() => examStore.exam?.subject || 'Ujian')
 
 const timeRemaining = ref(0)
+const isTimeUp = ref(false)
 let timerInterval = null
 
 const formattedTime = computed(() => {
@@ -32,6 +35,16 @@ onMounted(() => {
       const expiresAt = new Date(examStore.attempt.expiresAt).getTime()
       const now = Date.now() + (examStore.serverTimeOffset || 0)
       const remaining = Math.max(0, (expiresAt - now) / 1000)
+      
+      if (remaining <= 0 && examStore.attempt.status === 'IN_PROGRESS' && !isTimeUp.value) {
+        isTimeUp.value = true
+        examStore.submitExam().then(() => {
+          router.replace(`/exam/${examStore.attempt.id}/finished`)
+        }).catch(err => {
+          console.error(err)
+          router.replace(`/exam/${examStore.attempt.id}/finished`)
+        })
+      }
       
       // Trigger toast
       if (timeRemaining.value > 900 && remaining <= 900) {

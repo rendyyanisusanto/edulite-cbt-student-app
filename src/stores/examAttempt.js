@@ -308,6 +308,15 @@ export const useExamAttemptStore = defineStore('examAttempt', {
           this.attempt.status = 'TIME_EXPIRED';
         }
       }
+    },
+    
+    async submitExam() {
+      if (!this.attempt) return;
+      const attemptId = this.attempt.id;
+      this.flushPendingSaves();
+      await this.retrySync();
+      await api.post(`/student/attempts/${attemptId}/submit`);
+      this.attempt.status = 'SUBMITTED';
     }
   }
 })

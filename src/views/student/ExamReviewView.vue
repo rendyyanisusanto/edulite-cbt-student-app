@@ -47,12 +47,8 @@ const goToQuestion = (index) => {
 const submitExam = async () => {
   isSubmitting.value = true
   try {
-    // Flush pending
-    examStore.flushPendingSaves()
-    await examStore.retrySync()
-
     const attemptId = route.params.attemptId
-    await api.post(`/student/attempts/${attemptId}/submit`)
+    await examStore.submitExam()
     router.replace(`/exam/${attemptId}/finished`)
   } catch (error) {
     console.error(error)
